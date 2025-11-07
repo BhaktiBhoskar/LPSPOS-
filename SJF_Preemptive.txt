@@ -1,0 +1,80 @@
+import java.util.*;
+
+class SRTFProcess {
+    String pid;
+    int arrival, burst;
+    int remaining, finish, waiting, turnaround;
+
+    SRTFProcess(String pid, int arrival, int burst) {
+        this.pid = pid;
+        this.arrival = arrival;
+        this.burst = burst;
+        this.remaining = burst;
+    }
+}
+
+public class SJF_Preemptive {
+
+    public static void main(String[] args) {
+
+        SRTFProcess[] p = {
+                new SRTFProcess("P1", 0, 6),
+                new SRTFProcess("P2", 1, 4),
+                new SRTFProcess("P3", 4, 8),
+                new SRTFProcess("P4", 3, 3)
+        };
+
+        int n = p.length;
+        int completed = 0;
+        int time = 0;
+
+        while (completed < n) {
+            SRTFProcess shortest = null;
+
+            for (SRTFProcess pr : p) {
+                if (pr.arrival <= time && pr.remaining > 0) {
+                    if (shortest == null || pr.remaining < shortest.remaining) {
+                        shortest = pr;
+                    }
+                }
+            }
+
+            if (shortest == null) {
+                time++;
+                continue;
+            }
+
+            shortest.remaining--;
+            time++;
+
+            if (shortest.remaining == 0) {
+                shortest.finish = time;
+                completed++;
+            }
+        }
+
+        System.out.println("PID\tAT\tBT\tCT\tWT\tTAT");
+        for (SRTFProcess pr : p) {
+            pr.turnaround = pr.finish - pr.arrival;
+            pr.waiting = pr.turnaround - pr.burst;
+
+            System.out.println(
+                    pr.pid + "\t" +
+                    pr.arrival + "\t" +
+                    pr.burst + "\t" +
+                    pr.finish + "\t" +
+                    pr.waiting + "\t" +
+                    pr.turnaround
+            );
+        }
+    }
+}
+
+
+OUTPUT:-
+
+PID     AT      BT      CT      WT      TAT
+P1      0       6       13      7       13
+P2      1       4       5       0       4
+P3      4       8       21      9       17
+P4      3       3       8       2       5
