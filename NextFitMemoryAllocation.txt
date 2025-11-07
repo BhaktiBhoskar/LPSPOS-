@@ -1,0 +1,54 @@
+import java.util.*;
+
+public class NextFitMemoryAllocation {
+
+    public static void main(String[] args) {
+
+        int[] partitions = {100, 500, 200, 300, 600};  // memory blocks
+        int[] processes = {212, 417, 112, 426};        // process sizes
+
+        int n = partitions.length;
+        int m = processes.length;
+
+        int[] allocation = new int[m];  
+        Arrays.fill(allocation, -1);
+
+        int lastPosition = 0; // Pointer for Next Fit
+
+        // Next Fit Allocation
+        for (int i = 0; i < m; i++) {
+            int start = lastPosition;
+            boolean allocated = false;
+
+            do {
+                if (partitions[start] >= processes[i]) {
+                    allocation[i] = start;
+                    partitions[start] -= processes[i];
+                    lastPosition = start;   // Update next starting position
+                    allocated = true;
+                    break;
+                }
+
+                start = (start + 1) % n; // circular search
+
+            } while (start != lastPosition);
+        }
+
+        // Output
+        System.out.println("Process Size\tAllocated Partition");
+        for (int i = 0; i < m; i++) {
+            if (allocation[i] != -1)
+                System.out.println(processes[i] + "K\t\tPartition " + (allocation[i] + 1));
+            else
+                System.out.println(processes[i] + "K\t\tNot Allocated");
+        }
+    }
+}
+
+OUTPUT:-
+
+Process Size    Allocated Partition
+212K            Partition 2
+417K            Partition 5
+112K            Partition 5
+426K            Not Allocated
