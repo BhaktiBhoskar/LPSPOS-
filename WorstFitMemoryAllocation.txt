@@ -1,0 +1,52 @@
+import java.util.*;
+
+public class WorstFitMemoryAllocation {
+
+    public static void main(String[] args) {
+
+        int[] partitions = {100, 500, 200, 300, 600};  // memory blocks
+        int[] processes = {212, 417, 112, 426};        // process sizes
+
+        int n = partitions.length;
+        int m = processes.length;
+
+        int[] allocation = new int[m]; // which block each process gets
+        Arrays.fill(allocation, -1);
+
+        // Worst Fit Algorithm
+        for (int i = 0; i < m; i++) {
+            int worstIndex = -1;
+
+            for (int j = 0; j < n; j++) {
+                if (partitions[j] >= processes[i]) {
+                    if (worstIndex == -1 || partitions[j] > partitions[worstIndex]) {
+                        worstIndex = j;
+                    }
+                }
+            }
+
+            // allocate process to the largest suitable block
+            if (worstIndex != -1) {
+                allocation[i] = worstIndex;
+                partitions[worstIndex] -= processes[i]; // reduce remaining space
+            }
+        }
+
+        // Output
+        System.out.println("Process Size\tAllocated Partition");
+        for (int i = 0; i < m; i++) {
+            if (allocation[i] != -1)
+                System.out.println(processes[i] + "K\t\tPartition " + (allocation[i] + 1));
+            else
+                System.out.println(processes[i] + "K\t\tNot Allocated");
+        }
+    }
+}
+
+OUTPUT:-
+
+Process Size    Allocated Partition
+212K            Partition 5
+417K            Partition 2
+112K            Partition 5
+426K            Not Allocated
