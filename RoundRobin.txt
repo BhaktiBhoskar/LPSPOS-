@@ -1,0 +1,221 @@
+import java.util.*;
+
+class RRProcess {
+    String pid;
+    int arrival, burst;
+    int remaining, finish, waiting, turnaround;
+
+    RRProcess(String pid, int arrival, int burst) {
+        this.pid = pid;
+        this.arrival = arrival;
+        this.burst = burst;
+        this.remaining = burst;
+    }
+}
+
+public class RoundRobin {
+
+    public static void main(String[] args) {
+
+        int quantum = 2;   // Time Quantum
+
+        RRProcess[] p = {
+                new RRProcess("P1", 0, 6),
+                new RRProcess("P2", 1, 4),
+                new RRProcess("P3", 4, 8),
+                new RRProcess("P4", 3, 3)
+        };
+
+        int n = p.length;
+        int time = 0;
+        int completed = 0;
+
+        Queue<RRProcess> ready = new LinkedList<>();
+
+        // Add processes that arrive at time 0
+        for (RRProcess pr : p) {
+            if (pr.arrival == 0) {
+                ready.add(pr);
+            }
+        }
+
+        while (completed < n) {
+
+            if (ready.isEmpty()) {    // CPU idle
+                time++;
+                for (RRProcess pr : p) {
+                    if (pr.arrival == time) {
+                        ready.add(pr);
+                    }
+                }
+                continue;
+            }
+
+            RRProcess current = ready.poll();
+
+            int exec = Math.min(quantum, current.remaining);
+            current.remaining -= exec;
+            int oldTime = time;
+            time += exec;
+
+            // Add processes which arrive during execution
+            for (RRProcess pr : p) {
+                if (pr.arrival > oldTime && pr.arrival <= time && pr.remaining > 0) {
+                    if (!ready.contains(pr)) {
+                        ready.add(pr);
+                    }
+                }
+            }
+
+            if (current.remaining > 0) {
+                ready.add(current);
+            } else {
+                current.finish = time;
+                completed++;
+            }
+        }
+
+        // Calculate WT, TAT and averages
+        double totalWT = 0, totalTAT = 0;
+
+        System.out.println("PID\tAT\tBT\tCT\tWT\tTAT");
+
+        for (RRProcess pr : p) {
+
+            pr.turnaround = pr.finish - pr.arrival;   // TAT = CT - AT
+            pr.waiting = pr.turnaround - pr.burst;    // WT = TAT - BT
+
+            totalWT += pr.waiting;
+            totalTAT += pr.turnaround;
+
+            System.out.println(
+                    pr.pid + "\t" + pr.arrival + "\t" + pr.burst + "\t" +
+                    pr.finish + "\t" + pr.waiting + "\t" + pr.turnaround
+            );
+        }
+
+        System.out.println("\nAverage Waiting Time = " + (totalWT / n));
+        System.out.println("Average Turnaround Time = " + (totalTAT / n));
+    }
+}
+
+
+OUTPUT:-
+
+PID     AT      BT      CT      WT      TAT
+P1      0       6       14      8       14
+P2      1       4       12      7       11
+P3      4       8       21      9       17
+P4      3       3       17      11      14
+
+Average Waiting Time = 8.75
+Average Turnaround Time = 14.0
+
+
+ROUND ROBIN 1 CODE:-
+
+import java.util.*;
+
+class RRProcess {
+    String pid;
+    int arrival, burst;
+    int remaining, finish, waiting, turnaround;
+
+    RRProcess(String pid, int arrival, int burst) {
+        this.pid = pid;
+        this.arrival = arrival;
+        this.burst = burst;
+        this.remaining = burst;
+    }
+}
+
+public class RoundRobin1 {
+
+    public static void main(String[] args) {
+
+        int quantum = 2;
+
+        RRProcess[] p = {
+                new RRProcess("P1", 0, 6),
+                new RRProcess("P2", 1, 4),
+                new RRProcess("P3", 4, 8),
+                new RRProcess("P4", 3, 3)
+        };
+
+        int n = p.length;
+        int time = 0;
+        int completed = 0;
+
+        Queue<RRProcess> ready = new LinkedList<>();
+
+        // Load first arrivals
+        while (true) {
+            boolean added = false;
+            for (RRProcess pr : p) {
+                if (pr.arrival == time) {
+                    ready.add(pr);
+                    added = true;
+                }
+            }
+            if (!added) break;
+            time++;
+        }
+
+        while (completed < n) {
+
+            // Add newly arrived processes
+            for (RRProcess pr : p) {
+                if (pr.arrival <= time && pr.remaining > 0 && !ready.contains(pr)) {
+                    ready.add(pr);
+                }
+            }
+
+            if (ready.isEmpty()) {
+                time++;
+                continue;
+            }
+
+            RRProcess current = ready.poll();
+
+            int execTime = Math.min(quantum, current.remaining);
+
+            current.remaining -= execTime;
+            time += execTime;
+
+            // Add new arrivals during execution
+            for (RRProcess pr : p) {
+                if (pr.arrival > (time - execTime) && pr.arrival <= time && pr.remaining > 0) {
+                    if (!ready.contains(pr)) {
+                        ready.add(pr);
+                    }
+                }
+            }
+
+            // If still remaining → put back in queue
+            if (current.remaining > 0) {
+                ready.add(current);
+            } else {
+                current.finish = time;
+                completed++;
+            }
+        }
+
+        // Calculate WT & TAT
+        System.out.println("PID\tAT\tBT\tCT\tWT\tTAT");
+        for (RRProcess pr : p) {
+            pr.turnaround = pr.finish - pr.arrival;
+            pr.waiting = pr.turnaround - pr.burst;
+
+            System.out.println(pr.pid + "\t" + pr.arrival + "\t" + pr.burst + "\t" +
+                    pr.finish + "\t" + pr.waiting + "\t" + pr.turnaround);
+        }
+    }
+}
+
+OUTPUT:-
+
+PID     AT      BT      CT      WT      TAT
+P1      0       6       19      13      19
+P2      1       4       14      9       13
+P3      4       8       23      11      19
+P4      3       3       17      11      14
