@@ -1,0 +1,59 @@
+import java.util.*;
+
+class Process {
+    String pid;
+    int arrival, burst;
+    int start, finish, waiting, turnaround;
+
+    Process(String pid, int arrival, int burst) {
+        this.pid = pid;
+        this.arrival = arrival;
+        this.burst = burst;
+    }
+}
+
+public class FCFS_Scheduling {
+
+    public static void main(String[] args) {
+
+        // Sample Input
+        Process[] p = {
+                new Process("P1", 0, 3),
+                new Process("P2", 2, 6),
+                new Process("P3", 4, 4),
+                new Process("P4", 6, 5),
+                new Process("P5", 8, 2)
+        };
+
+        int time = 0;
+
+        System.out.println("PID\tAT\tBT\tST\tCT\tWT\tTAT");
+
+        for (Process pr : p) {
+
+            // CPU idle until process arrives
+            if (time < pr.arrival) {
+                time = pr.arrival;
+            }
+
+            pr.start = time;
+            pr.finish = pr.start + pr.burst;
+            pr.turnaround = pr.finish - pr.arrival;
+            pr.waiting = pr.start - pr.arrival;
+
+            time = pr.finish;
+
+            System.out.println(pr.pid + "\t" + pr.arrival + "\t" + pr.burst + "\t" +
+                    pr.start + "\t" + pr.finish + "\t" + pr.waiting + "\t" + pr.turnaround);
+        }
+    }
+}
+
+OUTPUT:-
+
+PID     AT      BT      ST      CT      WT      TAT
+P1      0       3       0       3       0       3
+P2      2       6       3       9       1       7
+P3      4       4       9       13      5       9
+P4      6       5       13      18      7       12
+P5      8       2       18      20      10      12
